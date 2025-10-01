@@ -1,0 +1,135 @@
+<div class="dashboard-header">
+	<div class="user-info">
+		<h1><%= user.displayName %></h1>
+		<div class="header-actions">
+			<button id="refresh-tasks" class="btn btn-secondary">Refresh Tasks</button>
+			<button id="clear-completed" class="btn btn-warning">Clear Completed</button>
+		</div>
+	</div>
+	<div class="header-right">
+		<button id="help-button" class="btn btn-icon" onclick="taskManager.toggleHelp()" title="Help & Shortcuts">ⓘ</button>
+		<button id="add-task" class="btn btn-primary">Add Task</button>
+	</div>
+</div>
+
+<div class="main-workspace">
+<div class="all-tasks">
+	<div class="all-tasks-header">
+		<h3>All Tasks</h3>
+		<div class="filter-section">
+			<button id="toggle-filters" class="btn btn-sm btn-secondary">Filters</button>
+			<div id="filter-dropdown" class="filter-dropdown">
+				<div class="filter-header">
+					<span>Filter by List:</span>
+					<button id="clear-filters" class="btn btn-xs btn-secondary">Clear All</button>
+				</div>
+				<div id="list-filters"></div>
+			</div>
+		</div>
+	</div>
+	<div id="all-tasks-container"></div>
+</div>
+
+	<div class="task-matrix">
+		<h2>Task Matrix</h2>
+		<div class="matrix-grid">
+			<div class="quadrant urgent-important">
+				<h3>Urgent & Important</h3>
+				<div class="task-list" data-category="urgent-important"></div>
+			</div>
+			<div class="quadrant not-urgent-important">
+				<h3>Not Urgent & Important</h3>
+				<div class="task-list" data-category="not-urgent-important"></div>
+			</div>
+			<div class="quadrant urgent-not-important">
+				<h3>Urgent & Not Important</h3>
+				<div class="task-list" data-category="urgent-not-important"></div>
+			</div>
+			<div class="quadrant not-urgent-not-important">
+				<h3>Not Urgent & Not Important</h3>
+				<div class="task-list" data-category="not-urgent-not-important"></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Help Modal -->
+<div id="help-modal" class="modal" style="display: none;">
+	<div class="modal-content help-content">
+		<span class="close" onclick="taskManager.toggleHelp()">&times;</span>
+		<h3>How to Use the Eisenhower Matrix</h3>
+		
+		<div class="help-section">
+			<h4>📋 The Matrix Quadrants</h4>
+			<ul>
+				<li><strong>Urgent & Important</strong> - Do these tasks first (deadlines, crises)</li>
+				<li><strong>Not Urgent & Important</strong> - Schedule these (planning, learning)</li>
+				<li><strong>Urgent & Not Important</strong> - Delegate if possible (interruptions, some emails)</li>
+				<li><strong>Not Urgent & Not Important</strong> - Minimize these (time wasters, busy work)</li>
+			</ul>
+		</div>
+
+		<div class="help-section">
+			<h4>⌨️ Keyboard Shortcuts</h4>
+			<table class="shortcuts-table">
+				<tr><td><kbd>N</kbd></td><td>New task</td></tr>
+				<tr><td><kbd>R</kbd></td><td>Refresh tasks</td></tr>
+				<tr><td><kbd>F</kbd></td><td>Toggle filters</td></tr>
+				<tr><td><kbd>Shift</kbd> + <kbd>C</kbd></td><td>Clear completed tasks</td></tr>
+				<tr><td><kbd>?</kbd></td><td>Show this help</td></tr>
+				<tr><td><kbd>ESC</kbd></td><td>Close dialogs</td></tr>
+			</table>
+		</div>
+
+		<div class="help-section">
+			<h4>🎯 Tips</h4>
+			<ul>
+				<li>Drag tasks from "All Tasks" into the appropriate quadrant</li>
+				<li>Tasks are automatically sorted by due date</li>
+				<li>Overdue tasks are highlighted in <span style="color: var(--error); font-weight: 500;">red</span></li>
+				<li>Use filters to show only specific task lists</li>
+				<li>Click refresh to re-sort tasks after moving them</li>
+			</ul>
+		</div>
+	</div>
+</div>
+
+<!-- Task Modal -->
+<div id="task-modal" class="modal">
+	<div class="modal-content">
+		<span class="close">&times;</span>
+		<h3 id="modal-title">Add Task</h3>
+		<form id="task-form">
+			<input type="hidden" id="task-id" />
+			<div class="form-group">
+				<label for="task-list-id">List:</label>
+				<select id="task-list-id" required>
+					<option value="">Select a list...</option>
+				</select>
+			</div>
+			<div class="form-group">
+				<label for="task-title">Title:</label>
+				<input type="text" id="task-title" required />
+			</div>
+			<div class="form-group">
+				<label for="task-notes">Description:</label>
+				<textarea id="task-notes"></textarea>
+			</div>
+			<div class="form-group">
+				<label for="task-due">Due Date:</label>
+				<input type="date" id="task-due" />
+			</div>
+			<div class="form-actions">
+				<button type="submit" class="btn btn-primary">Save</button>
+				<button type="button" id="cancel-task" class="btn btn-secondary">Cancel</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+<!-- Buy Me a Coffee Button -->
+<a href="https://buymeacoffee.com/yannickk" target="_blank" rel="noopener noreferrer" class="coffee-button" title="Support this project">
+	<span class="coffee-icon">☕</span>
+</a>
+
+<script src="/public/dashboard.js"></script>
