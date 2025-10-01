@@ -22,7 +22,7 @@ app.use(
 	session({
 		secret: process.env.SESSION_SECRET || 'dev_session_secret_change_me',
 		resave: false,
-		saveUninitialized: false,
+		saveUninitialized: true,
 		cookie: {
 			secure: isProduction,
 			httpOnly: true,

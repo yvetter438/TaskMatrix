@@ -952,6 +952,17 @@ kbd {
 	100% { transform: rotate(360deg); }
 }
 
+/* Error Message */
+.error-message {
+	background: var(--error-container);
+	color: var(--on-error-container);
+	padding: 16px;
+	border-radius: var(--radius);
+	margin: 20px 0;
+	text-align: center;
+	border: 1px solid var(--error);
+}
+
 /* Legal Links */
 .legal-links {
 	margin-top: 24px;

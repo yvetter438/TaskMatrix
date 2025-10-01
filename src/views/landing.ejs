@@ -8,6 +8,12 @@
 		<h1>Organize Your Tasks</h1>
 		<p class="subtitle">Transform your Google Tasks into an actionable Eisenhower Matrix</p>
 		
+		<% if (error) { %>
+		<div class="error-message">
+			<strong>⚠️ <%= error %></strong>
+		</div>
+		<% } %>
+		
 		<!-- Four Quadrant Cards -->
 		<div class="quadrant-cards">
 			<div class="info-card urgent-important-card">

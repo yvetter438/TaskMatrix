@@ -15,9 +15,13 @@ router.get('/google', (req, res, next) => {
 });
 
 router.get('/google/callback', (req, res, next) => {
-	if (!isOAuthConfigured && !isOAuthReady()) return res.redirect('/');
+	if (!isOAuthConfigured && !isOAuthReady()) {
+		console.log('OAuth not configured');
+		return res.redirect('/');
+	}
+	
 	return passport.authenticate('google', {
-		failureRedirect: '/',
+		failureRedirect: '/?error=auth_failed',
 		successRedirect: '/dashboard',
 	})(req, res, next);
 });

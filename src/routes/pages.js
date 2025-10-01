@@ -7,7 +7,15 @@ router.get('/', (req, res) => {
 	if (req.isAuthenticated && req.isAuthenticated()) {
 		return res.redirect('/dashboard');
 	}
-	res.render('landing', { title: 'Task Matrix' });
+	
+	// Check for authentication errors
+	const error = req.query.error;
+	const errorMessage = error === 'auth_failed' ? 'Authentication failed. Please try again.' : null;
+	
+	res.render('landing', { 
+		title: 'Task Matrix',
+		error: errorMessage 
+	});
 });
 
 router.get('/dashboard', ensureAuthenticated, (req, res) => {
