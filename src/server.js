@@ -39,7 +39,7 @@ app.use(passport.session());
 // Globals for views
 app.use((req, res, next) => {
 	res.locals.user = req.user || null;
-	res.locals.title = 'Google Tasks Eisenhower';
+	res.locals.title = 'Task Matrix';
 	next();
 });
 

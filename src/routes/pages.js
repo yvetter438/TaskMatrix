@@ -7,11 +7,11 @@ router.get('/', (req, res) => {
 	if (req.isAuthenticated && req.isAuthenticated()) {
 		return res.redirect('/dashboard');
 	}
-	res.render('landing', { title: 'Welcome' });
+	res.render('landing', { title: 'Task Matrix' });
 });
 
 router.get('/dashboard', ensureAuthenticated, (req, res) => {
-	res.render('dashboard', { title: 'Dashboard' });
+	res.render('dashboard', { title: 'Task Matrix' });
 });
 
 module.exports = router;
