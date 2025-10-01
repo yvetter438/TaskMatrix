@@ -952,6 +952,75 @@ kbd {
 	100% { transform: rotate(360deg); }
 }
 
+/* Legal Links */
+.legal-links {
+	margin-top: 24px;
+	text-align: center;
+	font-size: 14px;
+	color: var(--on-surface-variant);
+}
+
+.legal-links a {
+	color: var(--primary);
+	text-decoration: none;
+	transition: color 0.2s ease;
+}
+
+.legal-links a:hover {
+	color: var(--primary-dark);
+	text-decoration: underline;
+}
+
+.legal-links .separator {
+	margin: 0 12px;
+	color: var(--border);
+}
+
+/* Legal Pages */
+.legal-page {
+	padding: 40px 20px;
+	max-width: 800px;
+	margin: 0 auto;
+}
+
+.legal-content {
+	background: var(--surface);
+	padding: 40px;
+	border-radius: var(--radius-large);
+	box-shadow: var(--shadow);
+}
+
+.legal-content h1 {
+	color: var(--on-surface);
+	font-size: 32px;
+	margin-bottom: 16px;
+}
+
+.legal-content h2 {
+	color: var(--on-surface);
+	font-size: 20px;
+	margin: 32px 0 16px 0;
+	border-bottom: 2px solid var(--primary);
+	padding-bottom: 8px;
+}
+
+.legal-content p {
+	color: var(--on-surface-variant);
+	line-height: 1.6;
+	margin-bottom: 16px;
+}
+
+.legal-content ul {
+	color: var(--on-surface-variant);
+	line-height: 1.6;
+	margin: 16px 0;
+	padding-left: 24px;
+}
+
+.legal-content li {
+	margin-bottom: 8px;
+}
+
 /* Buy Me a Coffee Button */
 .coffee-button {
 	position: fixed;
