@@ -24,9 +24,9 @@ app.use(
 		resave: false,
 		saveUninitialized: true,
 		cookie: {
-			secure: isProduction,
+			secure: false, // Set to false for now to debug
 			httpOnly: true,
-			sameSite: isProduction ? 'lax' : 'lax',
+			sameSite: 'lax',
 		},
 	})
 );
