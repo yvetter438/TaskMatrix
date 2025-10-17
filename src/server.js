@@ -5,6 +5,44 @@ const layouts = require('express-ejs-layouts');
 const dotenv = require('dotenv');
 dotenv.config();
 
+// Session store setup: Redis for production, FileStore for local dev
+let sessionStore;
+if (process.env.REDIS_URL) {
+	// Production: Use Redis (Render's Key Value Store)
+	const RedisStore = require('connect-redis').default;
+	const { createClient } = require('redis');
+	
+	const redisClient = createClient({ url: process.env.REDIS_URL });
+	
+	// Connect to Redis with error handling
+	redisClient.connect().catch((err) => {
+		console.error('❌ Redis connection error:', err);
+	});
+	
+	redisClient.on('error', (err) => {
+		console.error('❌ Redis Client Error:', err);
+	});
+	
+	redisClient.on('connect', () => {
+		console.log('✅ Redis connected successfully');
+	});
+	
+	sessionStore = new RedisStore({ 
+		client: redisClient,
+		prefix: 'taskmatrix:',
+	});
+	console.log('✅ Using Redis session store (production)');
+} else {
+	// Local development: Use file-based sessions
+	const FileStore = require('session-file-store')(session);
+	sessionStore = new FileStore({
+		path: './sessions',
+		ttl: 30 * 24 * 60 * 60, // 30 days
+		retries: 0,
+	});
+	console.log('✅ Using FileStore session store (development)');
+}
+
 const { configurePassport, passport } = require('./config/passport');
 
 const app = express();
@@ -16,17 +54,19 @@ app.set('layout', 'layout');
 app.use(layouts);
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
-// Sessions
+// Sessions - Now with proper store
 const isProduction = process.env.NODE_ENV === 'production';
 app.use(
 	session({
+		store: sessionStore,
 		secret: process.env.SESSION_SECRET || 'dev_session_secret_change_me',
 		resave: false,
-		saveUninitialized: true,
+		saveUninitialized: false,
 		cookie: {
-			secure: false, // Set to false for now to debug
+			secure: isProduction, // HTTPS only in production
 			httpOnly: true,
 			sameSite: 'lax',
+			maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
 		},
 	})
 );
