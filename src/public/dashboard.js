@@ -36,8 +36,8 @@ class TaskManager {
 			this.openTaskModal();
 		});
 
-		// Modal controls
-		document.querySelector('.close').addEventListener('click', () => {
+		// Modal controls - specifically select close button within task modal
+		this.modal.querySelector('.close').addEventListener('click', () => {
 			this.closeModal();
 		});
 
@@ -147,10 +147,14 @@ class TaskManager {
 			}
 		});
 
-		// Close dropdowns when pressing Escape key
+		// Close dropdowns and modals when pressing Escape key
 		document.addEventListener('keydown', (e) => {
 			if (e.key === 'Escape') {
 				this.closeAllDropdowns();
+				// Close task modal if open
+				if (this.modal.style.display === 'block') {
+					this.closeModal();
+				}
 			}
 		});
 
