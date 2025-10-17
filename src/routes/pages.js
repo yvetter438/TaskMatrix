@@ -10,7 +10,12 @@ router.get('/', (req, res) => {
 	
 	// Check for authentication errors
 	const error = req.query.error;
-	const errorMessage = error === 'auth_failed' ? 'Authentication failed. Please try again.' : null;
+	let errorMessage = null;
+	if (error === 'auth_failed') {
+		errorMessage = 'Authentication failed. Please try again.';
+	} else if (error === 'missing_permission') {
+		errorMessage = 'You must grant access to your Google Tasks for this app to work. Please try again and make sure to check the "Create, edit, organize, and delete all your tasks" permission.';
+	}
 	
 	res.render('landing', { 
 		title: 'Task Matrix',

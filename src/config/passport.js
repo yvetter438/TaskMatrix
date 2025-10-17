@@ -29,8 +29,18 @@ function configurePassport() {
 			clientID,
 			clientSecret,
 			callbackURL,
+			passReqToCallback: true,
 		},
-		(accessToken, refreshToken, profile, done) => {
+		(req, accessToken, refreshToken, profile, done) => {
+			// Check if the required scope was granted
+			const grantedScopes = req.query.scope || '';
+			const hasTasksScope = grantedScopes.includes('https://www.googleapis.com/auth/tasks');
+			
+			if (!hasTasksScope) {
+				// User didn't grant tasks permission - fail authentication
+				return done(null, false, { message: 'Tasks permission is required for this app to work' });
+			}
+			
 			const user = {
 				id: profile.id,
 				displayName: profile.displayName,

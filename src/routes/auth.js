@@ -26,7 +26,11 @@ router.get('/google/callback', (req, res, next) => {
 			return next(err);
 		}
 		if (!user) {
-			console.log('No user returned from Google auth');
+			console.log('No user returned from Google auth:', info?.message);
+			// Check if it's because of missing tasks permission
+			if (info?.message && info.message.includes('Tasks permission')) {
+				return res.redirect('/?error=missing_permission');
+			}
 			return res.redirect('/?error=auth_failed');
 		}
 		
