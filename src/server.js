@@ -54,6 +54,9 @@ async function startServer() {
 	}
 
 	const app = express();
+	
+	// Trust proxy - Required for secure cookies behind Render's proxy
+	app.set('trust proxy', 1);
 
 	// Views and static
 	app.set('view engine', 'ejs');
@@ -63,20 +66,31 @@ async function startServer() {
 	app.use('/public', express.static(path.join(__dirname, 'public')));
 
 	// Sessions - Now with proper store
+	const isProduction = process.env.NODE_ENV === 'production';
 	app.use(
 		session({
 			store: sessionStore,
 			secret: process.env.SESSION_SECRET || 'dev_session_secret_change_me',
 			resave: false,
 			saveUninitialized: false,
+			name: 'taskmatrix.sid',
 			cookie: {
-				secure: process.env.NODE_ENV === 'production',
+				secure: isProduction,
 				httpOnly: true,
 				sameSite: 'lax',
 				maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
 			},
 		})
 	);
+	
+	// Debug logging for sessions in production
+	if (isProduction) {
+		app.use((req, res, next) => {
+			console.log('Session ID:', req.sessionID);
+			console.log('Is Authenticated:', req.isAuthenticated ? req.isAuthenticated() : false);
+			next();
+		});
+	}
 
 	// Passport
 	configurePassport();

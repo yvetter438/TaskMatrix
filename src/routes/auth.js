@@ -20,9 +20,33 @@ router.get('/google/callback', (req, res, next) => {
 		return res.redirect('/');
 	}
 	
-	return passport.authenticate('google', {
-		failureRedirect: '/?error=auth_failed',
-		successRedirect: '/dashboard',
+	passport.authenticate('google', (err, user, info) => {
+		if (err) {
+			console.error('Auth error:', err);
+			return next(err);
+		}
+		if (!user) {
+			console.log('No user returned from Google auth');
+			return res.redirect('/?error=auth_failed');
+		}
+		
+		// Manually log in and save session before redirect
+		req.login(user, (loginErr) => {
+			if (loginErr) {
+				console.error('Login error:', loginErr);
+				return next(loginErr);
+			}
+			
+			// Explicitly save session to Redis before redirect
+			req.session.save((saveErr) => {
+				if (saveErr) {
+					console.error('Session save error:', saveErr);
+					return next(saveErr);
+				}
+				console.log('✅ User logged in successfully, session saved');
+				return res.redirect('/dashboard');
+			});
+		});
 	})(req, res, next);
 });
 
