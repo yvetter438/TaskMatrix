@@ -47,14 +47,11 @@ async function getSessionStore() {
 				}
 			} catch (err) {
 				console.error('❌ Redis connection failed:', err);
-				// Don't exit in serverless - fall back to memory store
-				if (process.env.VERCEL) {
-					console.warn('⚠️ Falling back to memory store in serverless environment');
-					// Reset client so next attempt can try again
-					redisClient = null;
-					return null; // Will use default MemoryStore
-				}
-				throw err;
+				// Fall back to memory store if Redis fails (both Vercel and Render)
+				console.warn('⚠️ Falling back to memory store - Redis connection failed');
+				// Reset client so next attempt can try again
+				redisClient = null;
+				return null; // Will use default MemoryStore
 			}
 		}
 		
@@ -155,14 +152,18 @@ if (process.env.VERCEL) {
 		return appInstance(req, res);
 	};
 } else {
-	// Local development mode - start server
+	// Render or local development mode - start server
 	createApp().then(app => {
 		const port = process.env.PORT || 3000;
 		app.listen(port, () => {
 			console.log(`Server listening on http://localhost:${port}`);
 		});
 	}).catch((err) => {
-		console.error('Failed to start server:', err);
-		process.exit(1);
+		console.error('❌ Failed to start server:', err);
+		console.error('Error stack:', err.stack);
+		// On Render, don't exit immediately - let it retry
+		if (!process.env.RENDER) {
+			process.exit(1);
+		}
 	});
 }
