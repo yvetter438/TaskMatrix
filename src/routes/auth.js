@@ -15,6 +15,10 @@ router.get('/google', (req, res, next) => {
 });
 
 router.get('/google/callback', (req, res, next) => {
+	console.log('🔔 OAuth callback received');
+	console.log('  Query params:', req.query);
+	console.log('  Full URL:', req.protocol + '://' + req.get('host') + req.originalUrl);
+	
 	if (!isOAuthConfigured && !isOAuthReady()) {
 		console.log('OAuth not configured');
 		return res.redirect('/');

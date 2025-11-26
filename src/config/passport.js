@@ -15,8 +15,15 @@ let isOAuthConfigured = false;
 function configurePassport() {
 	const clientID = process.env.GOOGLE_CLIENT_ID;
 	const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-	const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+	// Ensure BASE_URL doesn't have trailing slash
+	let baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+	baseUrl = baseUrl.replace(/\/$/, ''); // Remove trailing slash
 	const callbackURL = `${baseUrl}/auth/google/callback`;
+
+	console.log('🔐 OAuth Configuration:');
+	console.log('  BASE_URL:', baseUrl);
+	console.log('  Callback URL:', callbackURL);
+	console.log('  Client ID:', clientID ? `${clientID.substring(0, 20)}...` : 'NOT SET');
 
 	if (!clientID || !clientSecret) {
 		console.warn('Warning: GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET is not set. OAuth is disabled.');
