@@ -1,0 +1,22 @@
+# Vercel ignore file
+# Files and directories to exclude from Vercel deployments
+
+# Local development files
+.env.local
+.env.development
+.env.test
+
+# Session files (not used in Vercel)
+sessions/
+
+# Development files
+*.log
+.DS_Store
+
+# Git
+.git
+.gitignore
+
+# Documentation (optional - can be included)
+# README.md
+# VERCEL_MIGRATION.md

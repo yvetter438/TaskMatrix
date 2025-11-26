@@ -7,34 +7,55 @@ dotenv.config();
 
 const { configurePassport, passport } = require('./config/passport');
 
-async function startServer() {
+// Global Redis client for reuse across serverless invocations
+let redisClient = null;
+let sessionStore = null;
+
+async function getSessionStore() {
+	// Return existing store if already initialized (for serverless reuse)
+	if (sessionStore) {
+		return sessionStore;
+	}
+
 	// Session store setup: Redis for production, FileStore for local dev
-	let sessionStore;
-	
 	if (process.env.REDIS_URL) {
-		// Production: Use Redis (Render's Key Value Store)
+		// Production: Use Redis (Vercel/Upstash or external Redis)
 		const RedisStore = require('connect-redis').default;
 		const { createClient } = require('redis');
 		
-		const redisClient = createClient({ 
-			url: process.env.REDIS_URL,
-			socket: {
-				connectTimeout: 10000,
-				reconnectStrategy: (retries) => Math.min(retries * 50, 500)
+		// Reuse existing client if available
+		if (!redisClient) {
+			redisClient = createClient({ 
+				url: process.env.REDIS_URL,
+				socket: {
+					connectTimeout: 10000,
+					reconnectStrategy: (retries) => Math.min(retries * 50, 500)
+				}
+			});
+			
+			redisClient.on('error', (err) => {
+				console.error('❌ Redis Client Error:', err);
+			});
+			
+			// Connect to Redis (non-blocking for serverless)
+			try {
+				if (!redisClient.isOpen && !redisClient.isReady) {
+					await redisClient.connect();
+					console.log('✅ Redis connected successfully');
+				} else if (redisClient.isReady) {
+					console.log('✅ Redis already connected');
+				}
+			} catch (err) {
+				console.error('❌ Redis connection failed:', err);
+				// Don't exit in serverless - fall back to memory store
+				if (process.env.VERCEL) {
+					console.warn('⚠️ Falling back to memory store in serverless environment');
+					// Reset client so next attempt can try again
+					redisClient = null;
+					return null; // Will use default MemoryStore
+				}
+				throw err;
 			}
-		});
-		
-		redisClient.on('error', (err) => {
-			console.error('❌ Redis Client Error:', err);
-		});
-		
-		// Wait for Redis to connect before starting server
-		try {
-			await redisClient.connect();
-			console.log('✅ Redis connected successfully');
-		} catch (err) {
-			console.error('❌ Redis connection failed:', err);
-			process.exit(1);
 		}
 		
 		sessionStore = new RedisStore({ 
@@ -52,10 +73,14 @@ async function startServer() {
 		});
 		console.log('✅ Using FileStore session store (development)');
 	}
+	
+	return sessionStore;
+}
 
+async function createApp() {
 	const app = express();
 	
-	// Trust proxy - Required for secure cookies behind Render's proxy
+	// Trust proxy - Required for secure cookies behind Vercel's proxy
 	app.set('trust proxy', 1);
 
 	// Views and static
@@ -65,11 +90,13 @@ async function startServer() {
 	app.use(layouts);
 	app.use('/public', express.static(path.join(__dirname, 'public')));
 
-	// Sessions - Now with proper store
-	const isProduction = process.env.NODE_ENV === 'production';
+	// Sessions - Get store (may be async)
+	const store = await getSessionStore();
+	const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL;
+	
 	app.use(
 		session({
-			store: sessionStore,
+			store: store, // null = MemoryStore (fallback)
 			secret: process.env.SESSION_SECRET || 'dev_session_secret_change_me',
 			resave: false,
 			saveUninitialized: false,
@@ -113,13 +140,29 @@ async function startServer() {
 	app.use('/auth', authRoutes);
 	app.use('/tasks', tasksRoutes);
 
-	const port = process.env.PORT || 3000;
-	app.listen(port, () => {
-		console.log(`Server listening on http://localhost:${port}`);
-	});
+	return app;
 }
 
-startServer().catch((err) => {
-	console.error('Failed to start server:', err);
-	process.exit(1);
-});
+// For Vercel serverless: export the handler
+if (process.env.VERCEL) {
+	// Serverless mode - export async handler
+	let appInstance = null;
+	
+	module.exports = async (req, res) => {
+		if (!appInstance) {
+			appInstance = await createApp();
+		}
+		return appInstance(req, res);
+	};
+} else {
+	// Local development mode - start server
+	createApp().then(app => {
+		const port = process.env.PORT || 3000;
+		app.listen(port, () => {
+			console.log(`Server listening on http://localhost:${port}`);
+		});
+	}).catch((err) => {
+		console.error('Failed to start server:', err);
+		process.exit(1);
+	});
+}
