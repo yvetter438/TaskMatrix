@@ -85,7 +85,14 @@ async function createApp() {
 	app.set('views', path.join(__dirname, 'views'));
 	app.set('layout', 'layout');
 	app.use(layouts);
-	app.use('/public', express.static(path.join(__dirname, 'public')));
+	
+	// Static files - ensure absolute path for serverless
+	const publicPath = path.join(__dirname, 'public');
+	console.log('📁 Serving static files from:', publicPath);
+	app.use('/public', express.static(publicPath, {
+		maxAge: '1y',
+		etag: true
+	}));
 
 	// Sessions - Get store (may be async)
 	const store = await getSessionStore();
