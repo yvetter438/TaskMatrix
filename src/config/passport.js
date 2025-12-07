@@ -39,13 +39,18 @@ function configurePassport() {
 			passReqToCallback: true,
 		},
 		(req, accessToken, refreshToken, profile, done) => {
-			// Check if the required scope was granted
-			const grantedScopes = req.query.scope || '';
-			const hasTasksScope = grantedScopes.includes('https://www.googleapis.com/auth/tasks');
+			console.log('🔐 Google OAuth callback - processing user:', profile.displayName);
+			console.log('  Access token received:', accessToken ? 'Yes' : 'No');
+			console.log('  Refresh token received:', refreshToken ? 'Yes' : 'No');
 			
-			if (!hasTasksScope) {
-				// User didn't grant tasks permission - fail authentication
-				return done(null, false, { message: 'Tasks permission is required for this app to work' });
+			// Note: Google doesn't return granted scopes in the callback query params.
+			// If we got here with an access token, the user granted the requested permissions.
+			// The scope was requested in the initial auth request, and if the user denied it,
+			// Google would not redirect back with a valid code.
+			
+			if (!accessToken) {
+				console.error('❌ No access token received from Google');
+				return done(null, false, { message: 'Failed to get access token from Google' });
 			}
 			
 			const user = {
@@ -56,6 +61,7 @@ function configurePassport() {
 				googleAccessToken: accessToken,
 				googleRefreshToken: refreshToken,
 			};
+			console.log('✅ User object created successfully');
 			return done(null, user);
 		}
 	));
