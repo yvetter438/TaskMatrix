@@ -35,4 +35,23 @@ router.get('/terms', (req, res) => {
 	res.render('terms', { title: 'Terms of Service' });
 });
 
+// Health check endpoint for debugging
+router.get('/health', (req, res) => {
+	res.json({
+		status: 'ok',
+		timestamp: new Date().toISOString(),
+		sessionID: req.sessionID || 'none',
+		hasSession: !!req.session,
+		isAuthenticated: req.isAuthenticated ? req.isAuthenticated() : false,
+		env: {
+			hasRedisUrl: !!process.env.REDIS_URL,
+			hasGoogleClientId: !!process.env.GOOGLE_CLIENT_ID,
+			hasBaseUrl: !!process.env.BASE_URL,
+			baseUrl: process.env.BASE_URL || 'not set',
+			nodeEnv: process.env.NODE_ENV,
+			isVercel: !!process.env.VERCEL
+		}
+	});
+});
+
 module.exports = router;

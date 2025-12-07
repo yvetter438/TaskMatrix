@@ -17,9 +17,16 @@ async function getSessionStore() {
 		return sessionStore;
 	}
 
-	// Session store setup: Redis for production, FileStore for local dev
+	// On Vercel serverless, skip Redis entirely and use memory store
+	// Sessions won't persist between function invocations, but we handle that in the auth flow
+	if (process.env.VERCEL) {
+		console.log('⚠️ Vercel detected - using MemoryStore (sessions are ephemeral)');
+		return null; // null = MemoryStore
+	}
+
+	// Session store setup: Redis for production (Render), FileStore for local dev
 	if (process.env.REDIS_URL) {
-		// Production: Use Redis (Vercel/Upstash or external Redis)
+		// Production: Use Redis (for Render or other persistent hosting)
 		const RedisStore = require('connect-redis').default;
 		const { createClient } = require('redis');
 		
@@ -28,8 +35,8 @@ async function getSessionStore() {
 			redisClient = createClient({ 
 				url: process.env.REDIS_URL,
 				socket: {
-					connectTimeout: 10000,
-					reconnectStrategy: (retries) => Math.min(retries * 50, 500)
+					connectTimeout: 5000,
+					reconnectStrategy: false
 				}
 			});
 			
@@ -37,7 +44,6 @@ async function getSessionStore() {
 				console.error('❌ Redis Client Error:', err);
 			});
 			
-			// Connect to Redis (non-blocking for serverless)
 			try {
 				if (!redisClient.isOpen && !redisClient.isReady) {
 					await redisClient.connect();
@@ -47,11 +53,9 @@ async function getSessionStore() {
 				}
 			} catch (err) {
 				console.error('❌ Redis connection failed:', err);
-				// Fall back to memory store if Redis fails (both Vercel and Render)
 				console.warn('⚠️ Falling back to memory store - Redis connection failed');
-				// Reset client so next attempt can try again
 				redisClient = null;
-				return null; // Will use default MemoryStore
+				return null;
 			}
 		}
 		

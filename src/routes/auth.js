@@ -11,6 +11,7 @@ router.get('/google', (req, res, next) => {
 		scope: ['profile', 'email', 'https://www.googleapis.com/auth/tasks'],
 		accessType: 'offline',
 		prompt: 'consent',
+		state: false, // Disable state parameter - helps with serverless session issues
 	})(req, res, next);
 });
 
@@ -33,7 +34,7 @@ router.get('/google/callback', (req, res, next) => {
 	}
 	
 	console.log('🔄 Starting passport.authenticate...');
-	passport.authenticate('google', (err, user, info) => {
+	passport.authenticate('google', { state: false }, (err, user, info) => {
 		const authTime = Date.now() - startTime;
 		console.log(`⏱️ Passport authenticate completed in ${authTime}ms`);
 		
